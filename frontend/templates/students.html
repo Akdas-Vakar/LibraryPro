@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Students — LibraryPro{% endblock %}
+{% block page_title %}Student Management{% endblock %}
+{% block content %}
+<div class="card-pro">
+  <div class="card-pro-header">
+    <span><i class="fas fa-users me-2"></i>All Students</span>
+    <span class="badge bg-secondary">{{ students|length }}</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table-pro">
+      <thead>
+        <tr>
+          <th>Name</th><th>Username</th><th>Email</th>
+          <th>VIP</th><th>Borrowed</th><th>Active</th><th>Total Fine</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td><strong>{{ s.full_name }}</strong></td>
+          <td><code>{{ s.username }}</code></td>
+          <td class="text-muted">{{ s.email or '—' }}</td>
+          <td>
+            {% if s.is_vip %}
+              <span class="badge-role vip"><i class="fas fa-star"></i> VIP</span>
+            {% else %}—{% endif %}
+          </td>
+          <td>{{ s.total_borrowed }}</td>
+          <td>
+            {% if s.currently_borrowed > 0 %}
+              <span class="badge-status active">{{ s.currently_borrowed }}</span>
+            {% else %}0{% endif %}
+          </td>
+          <td>
+            {% if s.total_fines > 0 %}
+              <span class="fine-badge">₹{{ "%.2f"|format(s.total_fines) }}</span>
+            {% else %}₹0.00{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

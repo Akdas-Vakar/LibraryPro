@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Location Management — LibraryPro{% endblock %}
+{% block page_title %}Physical Locations{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card-pro">
+      <div class="card-pro-header">
+        <span><i class="fas fa-plus me-2 text-success"></i>Add Location</span>
+      </div>
+      <div class="p-3">
+        <form action="{{ url_for('admin_locations') }}" method="POST">
+          <input type="hidden" name="action" value="add_location">
+          <div class="mb-3">
+            <label class="form-label-sm">Location Type</label>
+            <select name="type" class="form-input-sm" required>
+              <option value="library">Library</option>
+              <option value="floor">Floor</option>
+              <option value="section">Section</option>
+              <option value="bookcase">Bookcase</option>
+              <option value="shelf">Shelf</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label-sm">Name</label>
+            <input type="text" name="name" class="form-input-sm" placeholder="e.g. Ground Floor" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label-sm">Code</label>
+            <input type="text" name="code" class="form-input-sm" placeholder="e.g. GF" required>
+          </div>
+          <button type="submit" class="btn-primary-sm w-100">Add Location Component</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-8">
+    <div class="card-pro h-100">
+      <div class="card-pro-header">
+        <span><i class="fas fa-truck-moving me-2 text-primary"></i>Bulk Move Books</span>
+      </div>
+      <div class="p-3">
+        <form action="{{ url_for('admin_locations') }}" method="POST" class="d-flex flex-column h-100">
+          <input type="hidden" name="action" value="bulk_move">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label-sm">Current Category / Query</label>
+              <input type="text" name="query" class="form-input-sm" placeholder="e.g. Programming" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label-sm">New Location Code</label>
+              <input type="text" name="new_location_code" class="form-input-sm" placeholder="e.g. F1-SEC1-M01-S1-A" required>
+            </div>
+          </div>
+          <div class="row">
+             <div class="col-md-3 mb-3">
+                <input type="text" name="floor" class="form-input-sm" placeholder="Floor (e.g. First Floor)" required>
+             </div>
+             <div class="col-md-3 mb-3">
+                <input type="text" name="section" class="form-input-sm" placeholder="Section" required>
+             </div>
+             <div class="col-md-2 mb-3">
+                <input type="text" name="bookcase" class="form-input-sm" placeholder="bookcase" required>
+             </div>
+             <div class="col-md-2 mb-3">
+                <input type="text" name="shelf" class="form-input-sm" placeholder="Shelf" required>
+             </div>
+             <div class="col-md-2 mb-3">
+                <input type="text" name="slot" class="form-input-sm" placeholder="Slot" required>
+             </div>
+          </div>
+          <button type="submit" class="btn-primary-sm mt-auto" style="align-self: flex-start;">
+            <i class="fas fa-exchange-alt me-2"></i>Move Books
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

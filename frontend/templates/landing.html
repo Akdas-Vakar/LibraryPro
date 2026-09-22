@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LibraryPro – Smart AI Powered Library Management System</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link href="{{ url_for('static', filename='css/landing.css') }}" rel="stylesheet">
+</head>
+<body data-bs-spy="scroll" data-bs-target="#mainNavbar" data-bs-offset="100">
+
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+                <i class="fas fa-book-open text-primary me-2"></i>LibraryPro
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#how-it-works">How it Works</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                </ul>
+                <div class="nav-actions">
+                    {% if logged_in %}
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary rounded-pill px-4 shadow-sm login-btn">Go to Dashboard</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-primary rounded-pill px-4 shadow-sm login-btn">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero-section position-relative overflow-hidden">
+        <div class="animated-bg"></div>
+        <div class="container position-relative z-1">
+            <div class="row align-items-center min-vh-100 py-5 pt-lg-0">
+                <div class="col-lg-6 hero-text-col reveal-left">
+                    <h1 class="display-3 fw-bold mb-4 gradient-text typing-container">
+                        <span id="typing-text">Smarter Libraries. Better Learning.</span><span class="cursor">|</span>
+                    </h1>
+                    <p class="lead mb-4 text-muted hero-subtitle">
+                        LibraryPro is an AI-powered digital library management system that simplifies book management, automates library operations, and enhances the reading experience with intelligent recommendations and analytics.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        {% if logged_in %}
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg rounded-pill px-5 hero-btn">Go to Dashboard</a>
+                        {% else %}
+                            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg rounded-pill px-5 hero-btn">Login</a>
+                        {% endif %}
+                        <a href="#features" class="btn btn-outline-secondary btn-lg rounded-pill px-5 hero-btn outline-btn bg-white">Explore Features</a>
+                    </div>
+                </div>
+                <div class="col-lg-6 position-relative hero-img-col mt-5 mt-lg-0 reveal-right">
+                    
+                    <div class="hero-illustration">
+                        <div class="glass-card main-dash-card float-anim-1">
+                            <div class="mock-header"></div>
+                            <div class="mock-body">
+                                <div class="mock-line w-75"></div>
+                                <div class="mock-line w-50"></div>
+                                <div class="mock-chart mt-3"></div>
+                            </div>
+                        </div>
+                        <div class="floating-icon icon-ai float-anim-2"><i class="fas fa-robot text-purple"></i></div>
+                        <div class="floating-icon icon-book float-anim-3"><i class="fas fa-book text-primary"></i></div>
+                        <div class="floating-icon icon-student float-anim-4"><i class="fas fa-user-graduate text-success"></i></div>
+                        <div class="floating-badge badge-blur">✨ AI Powered</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-section py-5 position-relative z-2" style="margin-top: -60px;">
+        <div class="container">
+            <div class="row g-4 text-center glass-container p-4 rounded-4 reveal-up shadow-sm bg-white">
+                <div class="col-6 col-md-3">
+                    <h2 class="fw-bold mb-1 gradient-text"><span class="counter" data-target="10000">0</span>+</h2>
+                    <p class="mb-0 text-muted fw-medium">Books Managed</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h2 class="fw-bold mb-1 gradient-text"><span class="counter" data-target="500">0</span>+</h2>
+                    <p class="mb-0 text-muted fw-medium">Students</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h2 class="fw-bold mb-1 gradient-text"><span class="counter-float" data-target="99.9">0</span>%</h2>
+                    <p class="mb-0 text-muted fw-medium">System Reliability</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h2 class="fw-bold mb-1 gradient-text">24/7</h2>
+                    <p class="mb-0 text-muted fw-medium">AI Assistance</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features-section py-5 section-padding">
+        <div class="container mt-5">
+            <div class="text-center mb-5 reveal-up">
+                <span class="badge bg-primary-subtle text-primary mb-2 px-3 py-2 rounded-pill fw-bold">POWERFUL TOOLS</span>
+                <h2 class="display-5 fw-bold">Everything you need to run a modern library</h2>
+                <p class="text-muted lead mx-auto" style="max-width: 700px;">Discover a suite of features designed to make library management seamless, smart, and efficient.</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3 reveal-up" style="transition-delay: 0.1s;">
+                    <div class="feature-card glass-card border h-100 p-4 rounded-4 text-center">
+                        <div class="feature-icon bg-primary-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:60px; height:60px;">
+                            <i class="fas fa-book-open text-primary fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold">Smart Book Management</h5>
+                        <p class="text-muted small">Manage books with advanced search, categories, ISBN, and availability.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 reveal-up" style="transition-delay: 0.2s;">
+                    <div class="feature-card glass-card border h-100 p-4 rounded-4 text-center">
+                        <div class="feature-icon bg-info-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:60px; height:60px;">
+                            <i class="fas fa-robot text-info fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold">AI Assistant</h5>
+                        <p class="text-muted small">Ask questions about books and receive intelligent recommendations powered by Gemini AI.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 reveal-up" style="transition-delay: 0.3s;">
+                    <div class="feature-card glass-card border h-100 p-4 rounded-4 text-center">
+                        <div class="feature-icon bg-purple-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:60px; height:60px;">
+                            <i class="fas fa-file-alt text-purple fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold">AI Book Summaries</h5>
+                        <p class="text-muted small">Generate concise summaries for any book instantly with one click.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 reveal-up" style="transition-delay: 0.4s;">
+                    <div class="feature-card glass-card border h-100 p-4 rounded-4 text-center">
+                        <div class="feature-icon bg-success-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:60px; height:60px;">
+                            <i class="fas fa-exchange-alt text-success fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold">Book Issue & Return</h5>
+                        <p class="text-muted small">Fast issue and return workflow with automatic due date tracking.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 reveal-up" style="transition-delay: 0.5s;">
+                    <div class="feature-card glass-card border h-100 p-4 rounded-4 text-center">
+                        <div class="feature-icon bg-warning-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:60px; height:60px;">
+                            <i class="fas fa-bell text-warning fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold">Smart Notifications</h5>
+                        <p class="text-muted small">Receive automatic reminders for due dates and queue reservations.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 reveal-up" style="transition-delay: 0.6s;">
+                    <div class="feature-card glass-card border h-100 p-4 rounded-4 text-center">
+                        <div class="feature-icon bg-danger-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:60px; height:60px;">
+                            <i class="fas fa-chart-pie text-danger fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold">Analytics Dashboard</h5>
+                        <p class="text-muted small">Interactive charts showing library usage and borrowing trends.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 reveal-up" style="transition-delay: 0.7s;">
+                    <div class="feature-card glass-card border h-100 p-4 rounded-4 text-center">
+                        <div class="feature-icon bg-secondary-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:60px; height:60px;">
+                            <i class="fas fa-users text-secondary fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold">Student Management</h5>
+                        <p class="text-muted small">Manage users, track borrowing history, and monitor activity.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 reveal-up" style="transition-delay: 0.8s;">
+                    <div class="feature-card glass-card border h-100 p-4 rounded-4 text-center">
+                        <div class="feature-icon bg-dark-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:60px; height:60px;">
+                            <i class="fas fa-shield-alt text-dark fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold">Secure Authentication</h5>
+                        <p class="text-muted small">Role-based secure login for administrators and students.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="how-it-works-section py-5 section-padding position-relative">
+        <div class="container mt-5">
+            <div class="text-center mb-5 reveal-up">
+                <h2 class="display-5 fw-bold">How It Works</h2>
+                <p class="text-muted lead">Four simple steps to revolutionize your library experience.</p>
+            </div>
+            
+            <div class="row text-center position-relative step-container g-4">
+                
+                <div class="d-none d-lg-block step-line"></div>
+                
+                <div class="col-lg-3 mb-4 mb-lg-0 reveal-up" style="transition-delay: 0.1s;">
+                    <div class="step-card bg-white border p-4 rounded-4 h-100 position-relative z-1 shadow-sm">
+                        <div class="step-number">1</div>
+                        <div class="step-icon text-primary mb-3 fs-1"><i class="fas fa-sign-in-alt"></i></div>
+                        <h5 class="fw-bold">{% if logged_in %}Dashboard{% else %}Login{% endif %}</h5>
+                        <p class="text-muted small mb-0">{% if logged_in %}Access your library portal.{% else %}Sign in securely with your credentials.{% endif %}</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 mb-4 mb-lg-0 reveal-up" style="transition-delay: 0.3s;">
+                    <div class="step-card bg-white border p-4 rounded-4 h-100 position-relative z-1 shadow-sm">
+                        <div class="step-number">2</div>
+                        <div class="step-icon text-primary mb-3 fs-1"><i class="fas fa-search"></i></div>
+                        <h5 class="fw-bold">Search Books</h5>
+                        <p class="text-muted small mb-0">Find books using keyword or AI semantic search.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 mb-4 mb-lg-0 reveal-up" style="transition-delay: 0.5s;">
+                    <div class="step-card bg-white border p-4 rounded-4 h-100 position-relative z-1 shadow-sm">
+                        <div class="step-number">3</div>
+                        <div class="step-icon text-primary mb-3 fs-1"><i class="fas fa-hand-holding"></i></div>
+                        <h5 class="fw-bold">Issue / Return Books</h5>
+                        <p class="text-muted small mb-0">Borrow your desired books or join the waitlist queue.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 reveal-up" style="transition-delay: 0.7s;">
+                    <div class="step-card bg-white border p-4 rounded-4 h-100 position-relative z-1 shadow-sm">
+                        <div class="step-number">4</div>
+                        <div class="step-icon text-primary mb-3 fs-1"><i class="fas fa-magic"></i></div>
+                        <h5 class="fw-bold">AI Recommendations & Analytics</h5>
+                        <p class="text-muted small mb-0">Get AI recommendations and view analytics.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="why-choose-section py-5 section-padding bg-light-gradient">
+        <div class="container mt-5">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-5 mb-lg-0 reveal-left">
+                    <div class="illustration-wrapper glass-card bg-white border p-3 rounded-4 mx-auto shadow-sm" style="max-width: 500px;">
+                        <div class="inner-mockup bg-light rounded-3 p-4 position-relative overflow-hidden">
+                            
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="rounded-circle bg-primary opacity-50 me-3" style="width:40px; height:40px;"></div>
+                                <div>
+                                    <div class="bg-secondary opacity-50 rounded-pill mb-2" style="width:120px; height:10px;"></div>
+                                    <div class="bg-secondary opacity-25 rounded-pill" style="width:80px; height:8px;"></div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-3 p-3 mb-3 shadow-sm">
+                                <div class="bg-primary opacity-75 rounded-pill mb-2" style="width:60%; height:12px;"></div>
+                                <div class="bg-secondary opacity-50 rounded-pill mb-2" style="width:90%; height:8px;"></div>
+                                <div class="bg-secondary opacity-25 rounded-pill" style="width:40%; height:8px;"></div>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="bg-info opacity-50 rounded-3 shadow-sm" style="height:80px;"></div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="bg-purple opacity-50 rounded-3 shadow-sm" style="height:80px;"></div>
+                                </div>
+                            </div>
+                            <div class="floating-badge position-absolute top-0 end-0 m-3 p-2 rounded bg-white shadow fw-bold text-primary" style="font-size:0.8rem; animation: float 3s ease-in-out infinite;"><i class="fas fa-check-circle me-1"></i> System Secure</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 ps-lg-5 reveal-right">
+                    <h2 class="display-6 fw-bold mb-4">Why Choose LibraryPro?</h2>
+                    <p class="text-muted lead mb-4">Built with modern technologies to deliver a flawless, lightning-fast, and secure experience for educational institutions.</p>
+                    
+                    <ul class="list-unstyled checklist-modern">
+                        <li class="mb-3 d-flex align-items-center">
+                            <span class="check-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width:28px;height:28px;"><i class="fas fa-check small"></i></span>
+                            <span class="fs-5 fw-medium text-dark">AI Powered</span>
+                        </li>
+                        <li class="mb-3 d-flex align-items-center">
+                            <span class="check-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width:28px;height:28px;"><i class="fas fa-check small"></i></span>
+                            <span class="fs-5 fw-medium text-dark">Fast Search</span>
+                        </li>
+                        <li class="mb-3 d-flex align-items-center">
+                            <span class="check-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width:28px;height:28px;"><i class="fas fa-check small"></i></span>
+                            <span class="fs-5 fw-medium text-dark">Secure</span>
+                        </li>
+                        <li class="mb-3 d-flex align-items-center">
+                            <span class="check-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width:28px;height:28px;"><i class="fas fa-check small"></i></span>
+                            <span class="fs-5 fw-medium text-dark">Responsive</span>
+                        </li>
+                        <li class="mb-3 d-flex align-items-center">
+                            <span class="check-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width:28px;height:28px;"><i class="fas fa-check small"></i></span>
+                            <span class="fs-5 fw-medium text-dark">Easy to Use</span>
+                        </li>
+                        <li class="d-flex align-items-center">
+                            <span class="check-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width:28px;height:28px;"><i class="fas fa-check small"></i></span>
+                            <span class="fs-5 fw-medium text-dark">Smart Analytics</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="screenshots-section py-5 section-padding overflow-hidden">
+        <div class="container mt-5">
+            <div class="text-center mb-5 reveal-up">
+                <h2 class="display-5 fw-bold">A Glimpse Inside</h2>
+                <p class="text-muted lead">Experience our thoughtfully designed interfaces.</p>
+            </div>
+            
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-6 col-lg-4 reveal-up" style="transition-delay: 0.1s;">
+                    <a href="{{ url_for('dashboard') }}" class="text-decoration-none">
+                        <div class="screenshot-card rounded-4 overflow-hidden shadow position-relative bg-white border">
+                            <div class="screenshot-placeholder d-flex align-items-center justify-content-center text-primary bg-primary-subtle p-5 h-100 min-h-250">
+                                <i class="fas fa-gauge-high fa-5x opacity-50"></i>
+                            </div>
+                            <div class="screenshot-overlay d-flex align-items-center justify-content-center w-100 h-100 position-absolute top-0 start-0">
+                                <h4 class="text-white fw-bold mb-0">Dashboard</h4>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-6 col-lg-4 reveal-up" style="transition-delay: 0.2s;">
+                    <a href="{{ url_for('books') }}" class="text-decoration-none">
+                        <div class="screenshot-card rounded-4 overflow-hidden shadow position-relative bg-white border">
+                            <div class="screenshot-placeholder d-flex align-items-center justify-content-center text-info bg-info-subtle p-5 h-100 min-h-250">
+                                <i class="fas fa-book fa-5x opacity-50"></i>
+                            </div>
+                            <div class="screenshot-overlay d-flex align-items-center justify-content-center w-100 h-100 position-absolute top-0 start-0">
+                                <h4 class="text-white fw-bold mb-0">Book Catalog</h4>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-6 col-lg-4 reveal-up" style="transition-delay: 0.3s;">
+                    <a href="{{ url_for('chatbot') }}" class="text-decoration-none">
+                        <div class="screenshot-card rounded-4 overflow-hidden shadow position-relative bg-white border">
+                            <div class="screenshot-placeholder d-flex align-items-center justify-content-center text-purple bg-purple-subtle p-5 h-100 min-h-250">
+                                <i class="fas fa-robot fa-5x opacity-50"></i>
+                            </div>
+                            <div class="screenshot-overlay d-flex align-items-center justify-content-center w-100 h-100 position-absolute top-0 start-0">
+                                <h4 class="text-white fw-bold mb-0">AI Assistant</h4>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-6 col-lg-4 reveal-up" style="transition-delay: 0.4s;">
+                    <a href="{{ url_for('analytics') }}" class="text-decoration-none">
+                        <div class="screenshot-card rounded-4 overflow-hidden shadow position-relative bg-white border">
+                            <div class="screenshot-placeholder d-flex align-items-center justify-content-center text-danger bg-danger-subtle p-5 h-100 min-h-250">
+                                <i class="fas fa-chart-bar fa-5x opacity-50"></i>
+                            </div>
+                            <div class="screenshot-overlay d-flex align-items-center justify-content-center w-100 h-100 position-absolute top-0 start-0">
+                                <h4 class="text-white fw-bold mb-0">Analytics</h4>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-6 col-lg-4 reveal-up" style="transition-delay: 0.5s;">
+                    <a href="{{ url_for('students') }}" class="text-decoration-none">
+                        <div class="screenshot-card rounded-4 overflow-hidden shadow position-relative bg-white border">
+                            <div class="screenshot-placeholder d-flex align-items-center justify-content-center text-success bg-success-subtle p-5 h-100 min-h-250">
+                                <i class="fas fa-users fa-5x opacity-50"></i>
+                            </div>
+                            <div class="screenshot-overlay d-flex align-items-center justify-content-center w-100 h-100 position-absolute top-0 start-0">
+                                <h4 class="text-white fw-bold mb-0">Student Portal</h4>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials-section py-5 section-padding bg-light">
+        <div class="container mt-5">
+            <div class="text-center mb-5 reveal-up">
+                <h2 class="display-5 fw-bold">Loved by users</h2>
+                <p class="text-muted lead">See what our academic community says about LibraryPro.</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4 reveal-up" style="transition-delay: 0.1s;">
+                    <div class="testimonial-card bg-white border p-4 rounded-4 h-100 shadow-sm">
+                        <div class="rating text-warning mb-3">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <p class="fst-italic text-muted mb-4 flex-grow-1">"The AI book summaries save me hours of research time. The waitlist queue feature ensures I never miss out on required readings."</p>
+                        <div class="d-flex align-items-center mt-auto">
+                            <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width:50px;height:50px;">ES</div>
+                            <div>
+                                <h6 class="fw-bold mb-0">Student</h6>
+                                <small class="text-muted">Computer Science</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 reveal-up" style="transition-delay: 0.2s;">
+                    <div class="testimonial-card bg-white border p-4 rounded-4 h-100 shadow-sm">
+                        <div class="rating text-warning mb-3">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <p class="fst-italic text-muted mb-4 flex-grow-1">"Managing inventory and student records used to be a nightmare. LibraryPro automated everything and gave us actionable analytics!"</p>
+                        <div class="d-flex align-items-center mt-auto">
+                            <div class="avatar bg-purple text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width:50px;height:50px;">HL</div>
+                            <div>
+                                <h6 class="fw-bold mb-0">Librarian</h6>
+                                <small class="text-muted">Head Administrator</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 reveal-up" style="transition-delay: 0.3s;">
+                    <div class="testimonial-card bg-white border p-4 rounded-4 h-100 shadow-sm">
+                        <div class="rating text-warning mb-3">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <p class="fst-italic text-muted mb-4 flex-grow-1">"A brilliant modern system. The semantic search powered by Gemini AI accurately finds the exact reference materials I need for my lectures."</p>
+                        <div class="d-flex align-items-center mt-auto">
+                            <div class="avatar bg-info text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width:50px;height:50px;">PR</div>
+                            <div>
+                                <h6 class="fw-bold mb-0">Professor</h6>
+                                <small class="text-muted">Faculty Member</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="tech-section py-5 section-padding border-top bg-white">
+        <div class="container text-center py-4">
+            <h5 class="text-muted mb-5 fw-medium text-uppercase tracking-wider reveal-up">Powered By Modern Tech Stack</h5>
+            <div class="d-flex flex-wrap justify-content-center align-items-center gap-4 gap-md-5 reveal-up tech-badges">
+                <span class="tech-badge"><i class="fab fa-python tech-icon text-primary"></i> Python</span>
+                <span class="tech-badge"><i class="fas fa-pepper-hot tech-icon text-danger"></i> Flask</span>
+                <span class="tech-badge"><i class="fas fa-database tech-icon text-info"></i> MySQL</span>
+                <span class="tech-badge"><i class="fas fa-server tech-icon text-secondary"></i> SQLite</span>
+                <span class="tech-badge"><i class="fab fa-html5 tech-icon text-orange" style="color:#e34f26;"></i> HTML</span>
+                <span class="tech-badge"><i class="fab fa-css3-alt tech-icon text-primary"></i> CSS</span>
+                <span class="tech-badge"><i class="fab fa-js tech-icon text-warning"></i> JavaScript</span>
+                <span class="tech-badge"><i class="fab fa-bootstrap tech-icon text-purple"></i> Bootstrap</span>
+                <span class="tech-badge"><i class="fas fa-brain tech-icon text-success"></i> Gemini AI</span>
+                <span class="tech-badge"><i class="fas fa-chart-pie tech-icon text-danger"></i> Chart.js</span>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact" class="footer pt-5 pb-4 bg-dark text-white">
+        <div class="container mt-4">
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4">
+                    <h4 class="fw-bold mb-3"><i class="fas fa-book-open text-primary me-2"></i>LibraryPro</h4>
+                    <p class="text-white-50">Smarter Libraries. Better Learning. An AI-powered digital library management system built for modern educational institutions.</p>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <h5 class="fw-bold mb-3">Quick Links</h5>
+                    <ul class="list-unstyled footer-links">
+                        <li class="mb-2"><a href="#home" class="text-white-50 text-decoration-none">Home</a></li>
+                        <li class="mb-2"><a href="#features" class="text-white-50 text-decoration-none">Features</a></li>
+                        <li class="mb-2"><a href="#how-it-works" class="text-white-50 text-decoration-none">How It Works</a></li>
+                        <li class="mb-2"><a href="{{ url_for('dashboard') }}" class="text-white-50 text-decoration-none">Dashboard</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-4">
+                    <h5 class="fw-bold mb-3">Features</h5>
+                    <ul class="list-unstyled footer-links">
+                        <li class="mb-2"><a href="#features" class="text-white-50 text-decoration-none">Smart Search</a></li>
+                        <li class="mb-2"><a href="#features" class="text-white-50 text-decoration-none">AI Summaries</a></li>
+                        <li class="mb-2"><a href="#features" class="text-white-50 text-decoration-none">Waitlist Queues</a></li>
+                        <li class="mb-2"><a href="#features" class="text-white-50 text-decoration-none">Analytics</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-4">
+                    <h5 class="fw-bold mb-3">Contact</h5>
+                    <ul class="list-unstyled text-white-50">
+                        <li class="mb-2"><i class="fas fa-envelope me-2"></i> hello@LibraryPro.edu</li>
+                        <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i> University Campus</li>
+                    </ul>
+                    <div class="d-flex gap-3 mt-3">
+                        <a href="#" class="social-icon text-white bg-secondary bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center text-decoration-none" style="width:36px;height:36px; transition: 0.3s;"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-icon text-white bg-secondary bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center text-decoration-none" style="width:36px;height:36px; transition: 0.3s;"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="border-secondary opacity-25">
+            <div class="text-center text-white-50 pt-2">
+                <small>&copy; <span id="currentYear"></span> LibraryPro Project. All rights reserved.</small>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
+</body>
+</html>

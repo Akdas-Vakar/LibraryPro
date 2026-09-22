@@ -1,0 +1,772 @@
+{% extends "base.html" %}
+{% block title %}Books — LibraryPro{% endblock %}
+{% block page_title %}Books Catalog{% endblock %}
+
+{% block extra_head %}
+<style>
+  .badge-sentiment {
+    font-size: 0.7rem;
+    font-weight: 650;
+    padding: 2px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    display: inline-block;
+  }
+  .badge-sentiment.positive {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+  }
+  .badge-sentiment.negative {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+  }
+  .badge-sentiment.neutral {
+    background: rgba(100, 116, 139, 0.12);
+    color: #64748b;
+  }
+  .review-item {
+    border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+  .review-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+  .stars-display {
+    color: #f59e0b;
+    font-size: 0.85rem;
+  }
+  .rec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .rec-card {
+    background: var(--bg-main);
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.05));
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    transition: all 0.2s ease;
+  }
+  .rec-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+  .rec-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(79, 70, 229, 0.1);
+    color: #4f46e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+  }
+  .rec-info {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8rem;
+  }
+  .rec-info strong {
+    font-size: 0.85rem;
+    color: var(--text-color, #1e293b);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="card-pro mb-4">
+  <form action="{{ url_for('books') }}" method="GET" class="search-filter-bar" id="searchFilterForm">
+    <input type="hidden" name="per" id="perInput" value="{{ per|default(24) }}">
+    <div class="d-flex flex-wrap gap-2 w-100 mb-2">
+      <div class="search-box flex-grow-1">
+        <i class="fas fa-search"></i>
+        <input type="text" name="q" value="{{ search }}"
+               placeholder="Search books semantically (or by title/author)..." class="search-input" oninput="liveSearch(300)"/>
+      </div>
+      <select name="category" class="form-input-sm" style="max-width:180px" onchange="liveSearch(0)">
+        <option value="">All Categories</option>
+        {% for c in categories %}
+          <option value="{{ c }}" {% if cat == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+      <select name="sort" class="form-input-sm" style="max-width:180px" onchange="liveSearch(0)">
+        <option value="title" {% if sort == 'title' %}selected{% endif %}>Sort: Alphabetical (A-Z)</option>
+        <option value="isbn" {% if sort == 'isbn' %}selected{% endif %}>Sort: By ISBN</option>
+      </select>
+      <button type="button" class="btn-secondary-sm" data-bs-toggle="collapse" data-bs-target="#locationFilters" title="Physical Location Filters">
+        <i class="fas fa-map-marker-alt"></i> Loc
+      </button>
+      <button type="submit" class="btn-primary-sm">
+        <i class="fas fa-filter"></i> Filter
+      </button>
+      {% if search or cat or loc_lib or loc_floor or loc_sec or loc_bc or loc_sh or loc_sl %}
+        <a href="{{ url_for('books') }}" class="btn-secondary-sm">
+          <i class="fas fa-times"></i> Clear
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="collapse w-100 {% if loc_lib or loc_floor or loc_sec or loc_bc or loc_sh or loc_sl %}show{% endif %}" id="locationFilters">
+      <div class="d-flex flex-wrap gap-2 pt-2 border-top">
+        <input type="text" name="loc_lib" value="{{ loc_lib|default('') }}" placeholder="Library" class="form-input-sm" style="flex:1; min-width:100px;">
+        <input type="text" name="loc_floor" value="{{ loc_floor|default('') }}" placeholder="Floor" class="form-input-sm" style="flex:1; min-width:100px;">
+        <input type="text" name="loc_sec" value="{{ loc_sec|default('') }}" placeholder="Section" class="form-input-sm" style="flex:1; min-width:100px;">
+        <input type="text" name="loc_bc" value="{{ loc_bc|default('') }}" placeholder="Bookcase" class="form-input-sm" style="flex:1; min-width:100px;">
+        <input type="text" name="loc_sh" value="{{ loc_sh|default('') }}" placeholder="Shelf" class="form-input-sm" style="flex:1; min-width:100px;">
+        <input type="text" name="loc_sl" value="{{ loc_sl|default('') }}" placeholder="Slot" class="form-input-sm" style="flex:1; min-width:80px;">
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="card-pro d-flex flex-column flex-grow-1" id="booksContainer" style="min-height: calc(100vh - 200px);">
+  <div class="card-pro-header">
+    <span>
+      <i class="fas fa-book me-2"></i>Books
+      <span class="badge bg-secondary ms-1">{{ total }}</span>
+    </span>
+    <div>
+      {% if session.role == 'admin' %}
+      <button class="btn-primary-sm me-3" data-bs-toggle="modal" data-bs-target="#addBookModal">
+        <i class="fas fa-plus"></i> Add New Book
+      </button>
+      {% endif %}
+      <span class="text-muted small">
+        Page {{ page }} of {{ total_pages }}
+      </span>
+    </div>
+  </div>
+
+  {% if books %}
+  <div class="books-grid fade-in-up">
+    {% for book in books %}
+    <div class="book-card" data-book-id="{{ book.id }}" data-isbn="{{ book.isbn|default('') }}" data-pubyear="{{ book.publication_year|default('') }}" data-publisher="{{ book.publisher|default('') }}" data-library="{{ book.library|default('--') }}" data-floor="{{ book.floor|default('--') }}" data-section="{{ book.section|default('--') }}" data-bookcase="{{ book.bookcase|default('--') }}" data-shelf="{{ book.shelf|default('--') }}" data-slot="{{ book.slot|default('--') }}" data-coverurl="{{ book.cover_url|default('') }}" style="cursor: pointer;" onclick="if(!event.target.closest('button') && !event.target.closest('form') && !event.target.closest('a')) openBookDetails(this, {{ book.id }}, '{{ book.title|replace('\'', '\\\'')|replace('\"', '&quot;') }}', '{{ book.author|replace('\'', '\\\'')|replace('\"', '&quot;') }}', '{{ book.category|replace('\'', '\\\'')|replace('\"', '&quot;') }}', '{{ (book.description|replace('\'', '\\\'')|replace('\"', '&quot;')|replace('\n', ' ')) if book.description else '' }}')">
+      <div class="book-cover">
+        {% if book.cover_url %}
+          <img src="{{ book.cover_url }}" alt="Cover" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; border-radius: var(--radius-sm) var(--radius-sm) 0 0;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <i class="fas fa-book-open" style="display:none;"></i>
+        {% else %}
+          <i class="fas fa-book-open"></i>
+        {% endif %}
+        <span class="cat-chip" style="z-index: 10; position: relative;">{{ book.category }}</span>
+      </div>
+      <div class="book-details">
+        <h5 title="{{ book.title }}">{{ book.title }}</h5>
+        <p class="book-author"><i class="fas fa-user-edit me-1"></i>{{ book.author }}</p>
+        
+        <div class="d-flex align-items-center mt-2 gap-2">
+          {% if book.vip %}<span class="badge-role vip">VIP</span>{% endif %}
+          <small class="text-muted"><i class="fas fa-barcode me-1"></i>#{{ book.id }}</small>
+        </div>
+
+        <div class="book-meta d-flex flex-column gap-1 w-100 mt-2">
+          <div class="d-flex flex-wrap gap-1">
+            {% if book.available > 0 %}
+              <span class="badge-status returned" style="padding: 2px 6px; font-size: 0.7rem;"><i class="fas fa-check-circle me-1"></i>Avail: {{ book.available }}</span>
+            {% endif %}
+            {% if book.issued > 0 %}
+              <span class="badge-status active" style="padding: 2px 6px; font-size: 0.7rem;"><i class="fas fa-hand-holding me-1"></i>Issued: {{ book.issued }}</span>
+            {% endif %}
+            {% if book.reserved > 0 %}
+              <span class="badge-status" style="color: #d97706; background: rgba(245, 158, 11, 0.1); padding: 2px 6px; font-size: 0.7rem;"><i class="fas fa-clock me-1"></i>Wait: {{ book.reserved }}</span>
+            {% endif %}
+            {% if book.temporarily_off_shelf > 0 %}
+              <span class="badge-status" style="color: #3b82f6; background: rgba(59, 130, 246, 0.1); padding: 2px 6px; font-size: 0.7rem;"><i class="fas fa-book-reader me-1"></i>Off-Shelf: {{ book.temporarily_off_shelf }}</span>
+            {% endif %}
+          </div>
+          <div class="text-muted small w-100 mt-1 d-flex align-items-center">
+             <i class="fas fa-map-marker-alt me-1 text-danger"></i> 
+             <span title="Library: {{ book.library }}, Floor: {{ book.floor }}, Section: {{ book.section }}, Bookcase: {{ book.bookcase }}, Shelf: {{ book.shelf }}, Slot: {{ book.slot }}">{{ book.location_code or 'Unassigned' }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="book-actions">
+        <a href="{{ url_for('chatbot') }}?q={{ ('Tell me about the book ' ~ book.title ~ ' by ' ~ book.author)|urlencode }}" class="btn-primary-sm flex-grow-1 text-center justify-content-center text-decoration-none" title="AI Assistant">
+          <i class="fas fa-robot"></i> Ask AI
+        </a>
+        
+        {% if book.available == 0 %}
+        <form action="{{ url_for('join_queue', book_id=book.id) }}" method="POST" class="m-0">
+          <button type="submit" class="btn-icon-sm warning" title="Join Waitlist" style="height: 100%; width: 36px; border-radius: var(--radius-sm);">
+            <i class="fas fa-clock"></i>
+          </button>
+        </form>
+        {% endif %}
+
+        {% if session.role == 'admin' %}
+        <form action="{{ url_for('delete_book') }}" method="POST" class="m-0" onsubmit="return confirm('Delete this book?')">
+          <input type="hidden" name="book_id" value="{{ book.id }}"/>
+          <button type="submit" class="btn-icon-sm danger" title="Delete" style="height: 100%; width: 36px; border-radius: var(--radius-sm);">
+            <i class="fas fa-trash"></i>
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if total_pages > 1 %}
+  <div class="pagination-bar mt-auto pt-3 border-top">
+    {% if page > 1 %}
+      <a href="?page={{ page-1 }}&q={{ search }}&category={{ cat }}&per={{ per }}" class="page-btn">
+        <i class="fas fa-chevron-left"></i>
+      </a>
+    {% endif %}
+
+    {% for p in range(1, total_pages+1) %}
+      <a href="?page={{ p }}&q={{ search }}&category={{ cat }}&per={{ per }}"
+         class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
+    {% endfor %}
+
+    {% if page < total_pages %}
+      <a href="?page={{ page+1 }}&q={{ search }}&category={{ cat }}&per={{ per }}" class="page-btn">
+        <i class="fas fa-chevron-right"></i>
+      </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+    <div class="empty-state text-center fade-in-up">
+      <div class="empty-illustration">
+        <i class="fas fa-book-open"></i>
+      </div>
+      <h5>No books found</h5>
+      <p class="text-muted">{% if search %}We couldn't find any books matching your search. Try adjusting your filters.{% else %}Your catalog is empty. Add your first book above.{% endif %}</p>
+      {% if search %}
+        <a href="{{ url_for('books') }}" class="btn-primary-sm mt-3"><i class="fas fa-times me-2"></i>Clear Filters</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+{% if session.role == 'admin' %}
+<div class="modal fade" id="addBookModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content modal-pro">
+      <div class="modal-header-pro">
+        <h5 class="modal-title"><i class="fas fa-plus-circle text-success me-2"></i>Add New Book</h5>
+        <button type="button" class="btn-close-pro" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body p-4" style="background: var(--bg-main);">
+        <form action="{{ url_for('add_book') }}" method="POST" id="addBookFormEl">
+          <h6 class="mb-2 text-muted">Basic Info</h6>
+          <div class="form-row-3 mb-3">
+            <div>
+              <label class="form-label-sm">ISBN <span class="required">*</span></label>
+              <div class="d-flex gap-2">
+                <input type="text" name="isbn" id="bookIsbn" class="form-input-sm" placeholder="e.g. 9780131103627" required/>
+                <button type="button" class="btn-secondary-sm" onclick="fetchBookByISBN()" title="Auto-fill details from online database"><i class="fas fa-cloud-download-alt"></i></button>
+              </div>
+            </div>
+            <div>
+              <label class="form-label-sm">Title <span class="required">*</span></label>
+              <input type="text" name="title" id="bookTitle" class="form-input-sm" placeholder="Book title" required/>
+            </div>
+            <div>
+              <label class="form-label-sm">Author <span class="required">*</span></label>
+              <input type="text" name="author" id="bookAuthor" class="form-input-sm" placeholder="Author name" required/>
+            </div>
+          </div>
+
+          <h6 class="mb-2 text-muted">Publication Info</h6>
+          <div class="form-row-3 mb-3">
+            <div>
+              <label class="form-label-sm">Publication Year</label>
+              <input type="number" name="publication_year" class="form-input-sm" placeholder="e.g. 2021"/>
+            </div>
+            <div>
+              <label class="form-label-sm">Publisher</label>
+              <input type="text" name="publisher" class="form-input-sm" placeholder="Publisher name"/>
+            </div>
+            <div>
+              <label class="form-label-sm">Total Copies <span class="required">*</span></label>
+              <input type="number" name="total_copies" class="form-input-sm" value="1" min="1" required/>
+            </div>
+          </div>
+
+          <input type="hidden" name="cover_url" id="bookCoverUrl" value="" />
+          <h6 class="mb-2 text-muted">Description</h6>
+          <div class="d-flex gap-2 mb-3">
+            <textarea name="description" id="bookDesc" class="form-input-sm w-100" rows="3" placeholder="Short description..."></textarea>
+            <button type="button" class="btn-secondary-sm" id="btnGenDesc" onclick="generateAIDesc()" style="white-space: nowrap; height: fit-content;">
+              <i class="fas fa-magic"></i> AI Generate
+            </button>
+          </div>
+          
+          <div class="mt-4">
+            <button type="submit" class="btn-primary-sm w-100 py-2" id="addBookSubmitBtn" onclick="this.innerHTML='<i class=\'fas fa-spinner fa-spin\'></i> AI is classifying & allocating...';">
+              <i class="fas fa-plus"></i> Add Book (AI Allocation)
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="modal fade" id="bookDetailsModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content modal-pro">
+      <div class="modal-header-pro">
+        <h5 class="modal-title" id="detailsModalTitle"><i class="fas fa-brain me-2"></i>Book Details & AI Insights</h5>
+        <button type="button" class="btn-close-pro" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body modal-body-pro p-4" style="background: var(--bg-main);">
+        <div class="row g-4">
+          
+          <div class="col-md-7">
+            
+            <div class="card-pro mb-3">
+              <div class="card-pro-header py-2" style="background: rgba(0,0,0,0.02);">
+                <span><i class="fas fa-info-circle text-primary me-2"></i>Book Information</span>
+              </div>
+              <div class="p-3">
+                <p class="mb-2"><strong>ISBN:</strong> <span id="detailsIsbn" class="text-muted"></span></p>
+                <p class="mb-2"><strong>Author:</strong> <span id="detailsAuthor" class="text-muted"></span></p>
+                <p class="mb-2"><strong>Category:</strong> <span id="detailsCategory" class="cat-chip"></span></p>
+                <p class="mb-2"><strong>Publication Year:</strong> <span id="detailsPubYear" class="text-muted"></span></p>
+                <p class="mb-2"><strong>Publisher:</strong> <span id="detailsPublisher" class="text-muted"></span></p>
+                <p class="mb-1"><strong>Description:</strong></p>
+                <p id="detailsDesc" class="text-muted small mb-0" style="line-height: 1.5; font-style: italic;"></p>
+              </div>
+            </div>
+
+            <div class="card-pro mb-3">
+              <div class="card-pro-header py-2" style="background: rgba(0,0,0,0.02);">
+                <span>📍 Physical Location</span>
+              </div>
+              <div class="p-3">
+                <div class="d-flex flex-column gap-2" style="font-size: 0.9rem;">
+                  <div class="d-flex justify-content-between border-bottom pb-1">
+                    <span class="text-muted">Library</span>
+                    <strong id="locLibrary">--</strong>
+                  </div>
+                  <div class="d-flex justify-content-between border-bottom pb-1">
+                    <span class="text-muted">Floor</span>
+                    <strong id="locFloor">--</strong>
+                  </div>
+                  <div class="d-flex justify-content-between border-bottom pb-1">
+                    <span class="text-muted">Section</span>
+                    <strong id="locSection">--</strong>
+                  </div>
+                  <div class="d-flex justify-content-between border-bottom pb-1">
+                    <span class="text-muted">Bookcase</span>
+                    <strong id="locBookcase">--</strong>
+                  </div>
+                  <div class="d-flex justify-content-between border-bottom pb-1">
+                    <span class="text-muted">Shelf</span>
+                    <strong id="locShelf">--</strong>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span class="text-muted">Slot</span>
+                    <strong id="locSlot">--</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-pro mb-3">
+              <div class="card-pro-header py-2 d-flex justify-content-between align-items-center" style="background: rgba(0,0,0,0.02);">
+                <span><i class="fas fa-sparkles text-warning me-2"></i>AI Study Guide & Summary</span>
+                <button class="btn-primary-sm py-1 px-3" id="generateSummaryBtn" style="font-size: 0.8rem;">
+                  <i class="fas fa-magic"></i> Generate
+                </button>
+              </div>
+              <div class="p-3">
+                <div id="summaryContent" class="text-muted small" style="line-height: 1.5;">
+                  Click the button above to generate a brief summary or study guide using AI.
+                </div>
+              </div>
+            </div>
+
+            <div class="card-pro">
+              <div class="card-pro-header py-2" style="background: rgba(0,0,0,0.02);">
+                <span><i class="fas fa-heart text-danger me-2"></i>Semantic Recommendations</span>
+              </div>
+              <div class="p-3">
+                <div id="recommendationsContent">
+                  <div class="loading-spinner small"><i class="fas fa-spinner fa-spin"></i> Finding similar books…</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-5">
+            
+            <div class="card-pro mb-3 text-center" id="detailsCoverCard" style="display: none;">
+              <div class="p-3">
+                <img id="detailsCoverImage" src="" alt="Book Cover" class="img-fluid rounded shadow-sm" style="max-height: 300px; object-fit: cover;">
+              </div>
+            </div>
+
+            <div class="card-pro mb-3">
+              <div class="card-pro-header py-2" style="background: rgba(0,0,0,0.02);">
+                <span><i class="fas fa-pen-nib text-success me-2"></i>Write a Review</span>
+              </div>
+              <div class="p-3">
+                <form id="reviewForm" method="POST">
+                  <div class="mb-3">
+                    <label class="form-label-sm">Rating <span class="required">*</span></label>
+                    <select name="rating" class="form-input-sm" required>
+                      <option value="5">⭐⭐⭐⭐⭐ (5 - Excellent)</option>
+                      <option value="4">⭐⭐⭐⭐ (4 - Very Good)</option>
+                      <option value="3">⭐⭐⭐ (3 - Average)</option>
+                      <option value="2">⭐⭐ (2 - Poor)</option>
+                      <option value="1">⭐ (1 - Terrible)</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label-sm">Review text</label>
+                    <textarea name="review_text" class="form-input-sm" rows="3" placeholder="Write your review here. Heuristic NLP will automatically classify review sentiment!" required></textarea>
+                  </div>
+                  <button type="submit" class="btn-primary-sm w-100">Submit Review</button>
+                </form>
+              </div>
+            </div>
+
+            <div class="card-pro" style="max-height: 420px; display: flex; flex-direction: column;">
+              <div class="card-pro-header py-2" style="background: rgba(0,0,0,0.02);">
+                <span><i class="fas fa-comments text-info me-2"></i>Student Reviews</span>
+              </div>
+              <div class="p-3 overflow-y-auto" id="reviewsList" style="flex: 1; min-height: 180px;">
+                <div class="text-muted text-center small py-4">No reviews yet. Be the first to write one!</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function openBookDetails(el, bookId, title, author, category, description) {
+  const modalEl = document.getElementById('bookDetailsModal');
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  
+  
+  document.getElementById('detailsModalTitle').innerHTML = `<i class="fas fa-brain me-2 text-primary"></i>AI Insights — ${title}`;
+  document.getElementById('detailsIsbn').innerText = el.getAttribute('data-isbn') || '--';
+  document.getElementById('detailsAuthor').innerText = author;
+  document.getElementById('detailsCategory').innerText = category;
+  document.getElementById('detailsPubYear').innerText = el.getAttribute('data-pubyear') || '--';
+  document.getElementById('detailsPublisher').innerText = el.getAttribute('data-publisher') || '--';
+  document.getElementById('detailsDesc').innerText = description ? description : "No description available.";
+  
+  
+  document.getElementById('locLibrary').innerText = el.getAttribute('data-library');
+  document.getElementById('locFloor').innerText = el.getAttribute('data-floor');
+  document.getElementById('locSection').innerText = el.getAttribute('data-section');
+  document.getElementById('locBookcase').innerText = el.getAttribute('data-bookcase');
+  document.getElementById('locShelf').innerText = el.getAttribute('data-shelf');
+  document.getElementById('locSlot').innerText = el.getAttribute('data-slot');
+
+  
+  const coverUrl = el.getAttribute('data-coverurl');
+  const coverCard = document.getElementById('detailsCoverCard');
+  const coverImage = document.getElementById('detailsCoverImage');
+  if (coverUrl && coverUrl.trim() !== '') {
+    coverImage.src = coverUrl;
+    coverCard.style.display = 'block';
+  } else {
+    coverImage.src = '';
+    coverCard.style.display = 'none';
+  }
+  
+  
+  const summaryContent = document.getElementById('summaryContent');
+  summaryContent.innerHTML = 'Click the button above to generate a brief summary or study guide using AI.';
+  
+  
+  const summaryBtn = document.getElementById('generateSummaryBtn');
+  summaryBtn.onclick = function() {
+    summaryContent.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Querying AI model...';
+    fetch(`/book/${bookId}/summary`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          summaryContent.innerHTML = `<div style="line-height: 1.5; font-size: 0.9rem;">${data.summary}</div>`;
+        } else {
+          summaryContent.innerHTML = `<span class="text-danger">Error: ${data.message}</span>`;
+        }
+      })
+      .catch(err => {
+        summaryContent.innerHTML = '<span class="text-danger">Error generating summary. Please check connection.</span>';
+      });
+  };
+
+  
+  document.getElementById('reviewForm').action = `/book/${bookId}/review`;
+  
+  
+  document.querySelector('#reviewForm textarea').value = '';
+  
+  
+  const recContent = document.getElementById('recommendationsContent');
+  recContent.innerHTML = '<div class="loading-spinner small"><i class="fas fa-spinner fa-spin"></i> Finding similar books…</div>';
+  
+  fetch(`/recommend/${bookId}`)
+    .then(r => r.json())
+    .then(data => {
+      if (!data || data.length === 0) {
+        recContent.innerHTML = '<div class="text-muted small">No recommendations found yet. Try adding more books in the same category!</div>';
+        return;
+      }
+      let html = `<div class="rec-grid">`;
+      data.forEach(b => {
+        const safeTitle = (b.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeAuthor = (b.author || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeCat = (b.category || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeDesc = (b.description || '').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ');
+
+        html += `<div class="rec-card" style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'"
+                    data-isbn="${b.isbn || ''}"
+                    data-pubyear="${b.publication_year || ''}"
+                    data-publisher="${b.publisher || ''}"
+                    data-library="${b.library || '--'}"
+                    data-floor="${b.floor || '--'}"
+                    data-section="${b.section || '--'}"
+                    data-bookcase="${b.bookcase || '--'}"
+                    data-shelf="${b.shelf || '--'}"
+                    data-slot="${b.slot || '--'}"
+                    data-coverurl="${b.cover_url || ''}"
+                    onclick="openBookDetails(this, ${b.id}, '${safeTitle}', '${safeAuthor}', '${safeCat}', '${safeDesc}')">
+                   <div class="rec-icon"><i class="fas fa-book"></i></div>
+                   <div class="rec-info">
+                     <strong>${b.title}</strong>
+                     <span class="text-muted">${b.author}</span>
+                     <span class="cat-chip mt-1">${b.category}</span>
+                   </div>
+                 </div>`;
+      });
+      html += '</div>';
+      recContent.innerHTML = html;
+    })
+    .catch(() => {
+      recContent.innerHTML = '<div class="text-danger small">Could not load recommendations.</div>';
+    });
+    
+  
+  const reviewsList = document.getElementById('reviewsList');
+  reviewsList.innerHTML = '<div class="text-center py-3"><i class="fas fa-spinner fa-spin"></i> Loading reviews…</div>';
+  
+  fetch(`/book/${bookId}/reviews`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success' && data.reviews.length > 0) {
+        let html = '';
+        data.reviews.forEach(r => {
+          
+          let stars = '⭐'.repeat(r.rating);
+          
+          let sentimentClass = r.sentiment.toLowerCase();
+          
+          html += `<div class="review-item">
+                     <div class="d-flex justify-content-between align-items-center mb-1">
+                       <strong>${r.reviewer_name}</strong>
+                       <span class="badge-sentiment ${sentimentClass}">${r.sentiment}</span>
+                     </div>
+                     <div class="d-flex justify-content-between align-items-center mb-1">
+                       <span class="stars-display">${stars}</span>
+                       <small class="text-muted" style="font-size: 0.75rem;">${r.created_at}</small>
+                     </div>
+                     <p class="mb-0 text-muted small" style="line-height: 1.4;">${r.review_text}</p>
+                   </div>`;
+        });
+        reviewsList.innerHTML = html;
+      } else {
+        reviewsList.innerHTML = '<div class="text-muted text-center small py-4">No reviews yet. Be the first to write one!</div>';
+      }
+    })
+    .catch(() => {
+      reviewsList.innerHTML = '<div class="text-danger text-center small py-4">Error loading reviews.</div>';
+    });
+
+  
+  modal.show();
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPer = {{ per|default(10) }};
+    const currentPage = {{ page|default(1) }};
+    const gridEl = document.querySelector('.books-grid');
+    
+    function calculateIdealPerPage() {
+        if (!gridEl) return currentPer;
+        
+        
+        const availableWidth = gridEl.clientWidth;
+        const columnWidth = 280 + 24; 
+        const columns = Math.max(1, Math.floor(availableWidth / columnWidth));
+        
+        
+        const availableHeight = window.innerHeight - 150;
+        const cardHeight = 330 + 24; 
+        
+        
+        let rows = Math.ceil(availableHeight / cardHeight);
+        if (rows < 4) rows = 4; 
+        
+        let ideal = columns * rows;
+        if (ideal < 8) ideal = 8; 
+        if (ideal > 50) ideal = 50; 
+        
+        return ideal;
+    }
+
+    function checkAndAdaptLayout() {
+        if (!gridEl) return;
+        const idealPer = calculateIdealPerPage();
+        const perInput = document.getElementById('perInput');
+        if (perInput) perInput.value = idealPer;
+        
+        if (idealPer !== currentPer) {
+            
+            const firstItemIndex = (currentPage - 1) * currentPer;
+            const newPage = Math.floor(firstItemIndex / idealPer) + 1;
+
+            const url = new URL(window.location.href);
+            url.searchParams.set('per', idealPer);
+            url.searchParams.set('page', newPage);
+            window.location.replace(url.toString());
+        }
+    }
+
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has('per') && gridEl) {
+        checkAndAdaptLayout();
+    }
+
+    
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(checkAndAdaptLayout, 500);
+    });
+});
+
+let liveSearchTimer;
+async function liveSearch(delay=300) {
+    clearTimeout(liveSearchTimer);
+    liveSearchTimer = setTimeout(async () => {
+        const form = document.getElementById('searchFilterForm');
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
+        for (const [key, value] of formData.entries()) {
+            params.append(key, value);
+        }
+        
+        try {
+            const response = await fetch(`${form.action}?${params.toString()}`);
+            if (response.ok) {
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const newContainer = doc.getElementById('booksContainer');
+                if (newContainer) {
+                    document.getElementById('booksContainer').innerHTML = newContainer.innerHTML;
+                }
+                
+                window.history.replaceState({}, '', `${form.action}?${params.toString()}`);
+            }
+        } catch (e) {
+            console.error("Live search failed:", e);
+        }
+    }, delay);
+}
+
+async function fetchBookByISBN() {
+    const isbnInput = document.getElementById('bookIsbn');
+    const isbn = isbnInput.value.trim();
+    if (!isbn) {
+        alert("Please enter an ISBN first.");
+        return;
+    }
+    
+    
+    const btn = isbnInput.nextElementSibling;
+    const oldHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(`/api/fetch_isbn?isbn=${encodeURIComponent(isbn)}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            if (data.title) document.getElementById('bookTitle').value = data.title;
+            if (data.author) document.getElementById('bookAuthor').value = data.author;
+            if (data.publisher) document.querySelector('input[name="publisher"]').value = data.publisher;
+            if (data.publication_year) document.querySelector('input[name="publication_year"]').value = data.publication_year;
+            if (data.cover_url) document.getElementById('bookCoverUrl').value = data.cover_url;
+            
+            
+            if (data.title && data.author) {
+                generateAIDesc();
+            }
+        } else {
+            alert(data.error || "Could not fetch book details.");
+        }
+    } catch (err) {
+        alert("An error occurred while fetching book details.");
+    } finally {
+        btn.innerHTML = oldHtml;
+        btn.disabled = false;
+    }
+}
+
+async function generateAIDesc() {
+    const title = document.getElementById('bookTitle').value.trim();
+    const author = document.getElementById('bookAuthor').value.trim();
+    if (!title) {
+        alert("Please enter the book title first.");
+        return;
+    }
+    const btn = document.getElementById('btnGenDesc');
+    const oldHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/api/generate_book_metadata', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: title, author: author })
+        });
+        const data = await response.json();
+        if (data.description) {
+            document.getElementById('bookDesc').value = data.description;
+        } else if (data.error) {
+            alert(data.error);
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Error generating description.");
+    } finally {
+        btn.innerHTML = oldHtml;
+        btn.disabled = false;
+    }
+}
+</script>
+{% endblock %}

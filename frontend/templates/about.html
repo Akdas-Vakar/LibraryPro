@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}About — LibraryPro{% endblock %}
+{% block page_title %}About LibraryPro{% endblock %}
+
+{% block content %}
+<div class="row g-4 fade-in-up">
+    
+    <div class="col-lg-8">
+        <div class="card-pro h-100">
+            <div class="card-pro-header">
+                <span><i class="fas fa-info-circle me-2 text-primary"></i>Project Overview</span>
+            </div>
+            <div class="p-4">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-book-open fa-2x"></i>
+                    </div>
+                    <h3 class="fw-bold">LibraryPro</h3>
+                    <p class="text-muted">Smart AI Powered Library Management System</p>
+                </div>
+                
+                <h5 class="fw-semibold text-primary mt-4 mb-3">Our Mission</h5>
+                <p class="text-muted" style="line-height: 1.6;">
+                    LibraryPro is designed to revolutionize how educational institutions manage their book inventory, student borrowing records, and digital catalogs. By integrating modern web technologies and advanced Artificial Intelligence, we aim to eliminate manual overhead, provide actionable analytics, and offer students an unparalleled learning experience.
+                </p>
+
+                <h5 class="fw-semibold text-primary mt-4 mb-3">Key Objectives</h5>
+                <ul class="text-muted mb-4" style="line-height: 1.6;">
+                    <li class="mb-2"><strong>Automation:</strong> Streamline book issuing, returns, and waitlist queues.</li>
+                    <li class="mb-2"><strong>Intelligence:</strong> Leverage Gemini AI to provide instant book summaries and semantic search.</li>
+                    <li class="mb-2"><strong>User Experience:</strong> Deliver a premium, commercial-grade interface that works seamlessly on all devices.</li>
+                    <li class="mb-2"><strong>Reliability:</strong> Maintain a secure, optimized, and robust backend architecture.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card-pro h-100">
+            <div class="card-pro-header">
+                <span><i class="fas fa-microchip me-2 text-warning"></i>Technology Stack</span>
+            </div>
+            <div class="p-4">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="bg-light rounded p-2 text-center" style="width: 50px;"><i class="fab fa-python fs-4 text-primary"></i></div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Python & Flask</h6>
+                        <small class="text-muted">Backend Architecture</small>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="bg-light rounded p-2 text-center" style="width: 50px;"><i class="fas fa-database fs-4 text-info"></i></div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">MySQL & SQLite</h6>
+                        <small class="text-muted">Relational Databases</small>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="bg-light rounded p-2 text-center" style="width: 50px;"><i class="fab fa-html5 fs-4 text-danger"></i></div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">HTML5, CSS3, JS</h6>
+                        <small class="text-muted">Modern Frontend</small>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="bg-light rounded p-2 text-center" style="width: 50px;"><i class="fas fa-brain fs-4 text-success"></i></div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Google Gemini AI</h6>
+                        <small class="text-muted">Summaries & Sentiment</small>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-light rounded p-2 text-center" style="width: 50px;"><i class="fas fa-chart-pie fs-4 text-purple"></i></div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Chart.js</h6>
+                        <small class="text-muted">Interactive Analytics</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

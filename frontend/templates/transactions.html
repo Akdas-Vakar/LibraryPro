@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Transactions — LibraryPro{% endblock %}
+{% block page_title %}All Transactions{% endblock %}
+
+{% block content %}
+<div class="card-pro">
+  <div class="card-pro-header">
+    <span><i class="fas fa-receipt me-2"></i>Transaction History</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table-pro">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Book</th>
+          <th>Student</th>
+          <th>Issue Date</th>
+          <th>Due Date</th>
+          <th>Return Date</th>
+          <th>Status</th>
+          <th>Fine</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tx in transactions %}
+        <tr class="{% if tx.status == 'active' and tx.days_late and tx.days_late > 0 %}overdue-row{% endif %}">
+          <td><code>#{{ tx.id }}</code></td>
+          <td>{{ tx.book_title }}</td>
+          <td>{{ tx.student_name }}</td>
+          <td class="text-muted">{{ tx.issue_date }}</td>
+          <td class="{% if tx.status == 'active' and tx.days_late and tx.days_late > 0 %}text-danger fw-semibold{% else %}text-muted{% endif %}">
+            {{ tx.due_date }}
+          </td>
+          <td class="text-muted">{{ tx.return_date or '—' }}</td>
+          <td>
+            <span class="badge-status {{ tx.status }}">
+              {% if tx.status == 'active' and tx.days_late and tx.days_late > 0 %}
+                overdue
+              {% else %}
+                {{ tx.status }}
+              {% endif %}
+            </span>
+          </td>
+          <td>
+            {% if tx.fine_amount and tx.fine_amount > 0 %}
+              <span class="fine-badge">₹{{ "%.2f"|format(tx.fine_amount) }}</span>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if total_pages > 1 %}
+  <div class="pagination-bar">
+    {% if page > 1 %}
+      <a href="?page={{ page - 1 }}" class="page-btn"><i class="fas fa-chevron-left"></i></a>
+    {% endif %}
+    {% for p in range(1, total_pages + 1) %}
+      <a href="?page={{ p }}" class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
+    {% endfor %}
+    {% if page < total_pages %}
+      <a href="?page={{ page + 1 }}" class="page-btn"><i class="fas fa-chevron-right"></i></a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

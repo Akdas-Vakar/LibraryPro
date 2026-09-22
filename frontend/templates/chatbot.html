@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+
+{% block title %}AI Assistant - LibraryPro{% endblock %}
+{% block page_title %}AI Library Assistant{% endblock %}
+
+{% block extra_head %}
+<style>
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 160px);
+    background: var(--bg-card, #ffffff);
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+    overflow: hidden;
+  }
+
+  .chat-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+    background: linear-gradient(135deg, #4f46e5, #3b82f6);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .chat-header i {
+    font-size: 24px;
+  }
+
+  .chat-header-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .chat-header-subtitle {
+    font-size: 0.8rem;
+    opacity: 0.85;
+    margin: 0;
+  }
+
+  .chat-messages {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: var(--bg-main, #f8fafc);
+  }
+
+  .chat-message {
+    max-width: 75%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chat-message.assistant {
+    align-self: flex-start;
+  }
+
+  .chat-message.user {
+    align-self: flex-end;
+  }
+
+  .chat-bubble {
+    padding: 14px 18px;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  }
+
+  .assistant .chat-bubble {
+    background: var(--bg-card, #ffffff);
+    color: var(--text-primary, #1e293b);
+    border-top-left-radius: 4px;
+    border: 1px solid var(--border, rgba(0, 0, 0, 0.06));
+  }
+
+  .user .chat-bubble {
+    background: #4f46e5;
+    color: #ffffff;
+    border-top-right-radius: 4px;
+  }
+
+  .chat-time {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 4px;
+    padding: 0 4px;
+  }
+
+  .user .chat-time {
+    align-self: flex-end;
+  }
+
+  .chat-actions-container {
+    padding: 12px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: var(--bg-card, #ffffff);
+    border-top: 1px solid var(--border, rgba(0, 0, 0, 0.06));
+  }
+
+  .action-chip {
+    background: var(--bg-main, #f1f5f9);
+    border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+    color: #4f46e5;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .action-chip:hover {
+    background: #4f46e5;
+    color: #ffffff;
+    border-color: #4f46e5;
+    transform: translateY(-1px);
+  }
+
+  .chat-input-area {
+    padding: 16px 24px;
+    background: var(--bg-card, #ffffff);
+    border-top: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+  }
+
+  .chat-input-group {
+    display: flex;
+    gap: 12px;
+  }
+
+  .chat-input {
+    flex: 1;
+    border: 1px solid var(--border, rgba(0, 0, 0, 0.15));
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    background: var(--bg-card, #ffffff);
+    color: var(--text-primary, #1e293b);
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .chat-input:focus {
+    border-color: #4f46e5;
+  }
+
+  .chat-send-btn {
+    background: #4f46e5;
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 0 20px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .chat-send-btn:hover {
+    background: #4338ca;
+    transform: scale(1.02);
+  }
+
+  
+  .typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+  }
+
+  .typing-dot {
+    width: 6px;
+    height: 6px;
+    background: #94a3b8;
+    border-radius: 50%;
+    animation: typing 1.4s infinite ease-in-out;
+  }
+
+  .typing-dot:nth-child(1) { animation-delay: 0s; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typing {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-10 col-xl-9">
+    <div class="chat-container">
+      <div class="chat-header">
+        <i class="fas fa-robot"></i>
+        <div>
+          <h2 class="chat-header-title">LibraryPro AI Assistant</h2>
+          <p class="chat-header-subtitle">Chatbot · Book Finder · Loan Helper</p>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        
+        <div class="chat-message assistant">
+          <div class="chat-bubble">
+            Hello! 👋 I am your LibraryPro Assistant. You can ask me to:
+            <ul class="mb-0 mt-2">
+              <li>Search for books in the library (e.g. <i>"search for Python"</i>)</li>
+              <li>Check your active borrowings and fines (e.g. <i>"what did I borrow?"</i>)</li>
+              <li>Learn about borrowing rules, standard loan limits, and open hours</li>
+            </ul>
+          </div>
+          <div class="chat-time" id="welTime">Just now</div>
+        </div>
+      </div>
+
+      <div class="chat-actions-container">
+        <button class="action-chip" onclick="sendActionQuery('Show me Science Fiction books')">👽 Search Science Fiction</button>
+        <button class="action-chip" onclick="sendActionQuery('What did I borrow?')">📚 My Active Loans & Fines</button>
+        <button class="action-chip" onclick="sendActionQuery('What are the library hours and fine policies?')">🏛️ Library Rules & Hours</button>
+      </div>
+
+      <div class="chat-input-area">
+        <form id="chatForm" onsubmit="handleChatSubmit(event)">
+          <div class="chat-input-group">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Type a message or ask a question..." autocomplete="off" required/>
+            <button type="submit" class="chat-send-btn">
+              <span>Send</span><i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  
+  const now = new Date();
+  document.getElementById('welTime').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  const chatMessages = document.getElementById('chatMessages');
+  const chatInput = document.getElementById('chatInput');
+  
+  let chatHistory = [];
+  
+  function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function formatTime() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  
+  function sendActionQuery(text) {
+    chatInput.value = text;
+    document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+  }
+
+  function handleChatSubmit(event) {
+    event.preventDefault();
+    const message = chatInput.value.trim();
+    if (!message) return;
+
+    
+    appendMessage(message, 'user');
+    chatInput.value = '';
+    
+    chatHistory.push({"role": "user", "parts": [{"text": message}]});
+
+    
+    const typingId = appendTypingIndicator();
+    scrollToBottom();
+
+    
+    fetch("{{ url_for('api_chat') }}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message: message, history: chatHistory })
+    })
+    .then(response => response.json())
+    .then(data => {
+      
+      document.getElementById(typingId).remove();
+      
+      chatHistory.push({"role": "model", "parts": [{"text": data.response}]});
+      
+      
+      const botResponse = parseSimpleMarkdown(data.response);
+      appendMessage(botResponse, 'assistant', true);
+      scrollToBottom();
+    })
+    .catch(error => {
+      document.getElementById(typingId).remove();
+      appendMessage("Sorry, I encountered an error. Please try again.", 'assistant');
+      scrollToBottom();
+      console.error('Chat error:', error);
+    });
+  }
+
+  function appendMessage(text, sender, isHTML = false) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `chat-message ${sender}`;
+
+    const bubbleDiv = document.createElement('div');
+    bubbleDiv.className = 'chat-bubble';
+    if (isHTML) {
+      bubbleDiv.innerHTML = text;
+    } else {
+      bubbleDiv.innerText = text;
+    }
+
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'chat-time';
+    timeDiv.innerText = formatTime();
+
+    msgDiv.appendChild(bubbleDiv);
+    msgDiv.appendChild(timeDiv);
+    chatMessages.appendChild(msgDiv);
+    
+    scrollToBottom();
+  }
+
+  function appendTypingIndicator() {
+    const uniqueId = 'typing_' + Date.now();
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'chat-message assistant';
+    msgDiv.id = uniqueId;
+
+    const bubbleDiv = document.createElement('div');
+    bubbleDiv.className = 'chat-bubble';
+    
+    const indicator = document.createElement('div');
+    indicator.className = 'typing-indicator';
+    for (let i = 0; i < 3; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'typing-dot';
+      indicator.appendChild(dot);
+    }
+    
+    bubbleDiv.appendChild(indicator);
+    msgDiv.appendChild(bubbleDiv);
+    chatMessages.appendChild(msgDiv);
+    return uniqueId;
+  }
+
+  
+  function parseSimpleMarkdown(text) {
+    let html = text;
+    
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    html = html.replace(/\n/g, '<br/>');
+    return html;
+  }
+
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q');
+    if (q) {
+      chatInput.value = q;
+      document.getElementById('chatForm').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Waiting Queue — LibraryPro{% endblock %}
+{% block page_title %}Priority Waiting Queue{% endblock %}
+
+{% block content %}
+<div class="card-pro">
+  <div class="card-pro-header">
+    <span><i class="fas fa-layer-group me-2 text-purple"></i>Waiting Queue
+      <span class="badge bg-secondary ms-2">Priority Queue + FIFO</span>
+    </span>
+  </div>
+
+  <div class="info-box mb-4">
+    <i class="fas fa-circle-info"></i>
+    <span>This queue uses a <strong>Priority Queue</strong> (C++ <code>std::priority_queue</code>).
+    VIP / Faculty members (priority 1) are served before regular students (priority 2).</span>
+  </div>
+
+  {% if entries %}
+  <div class="table-responsive">
+    <table class="table-pro">
+      <thead>
+        <tr>
+          <th>Position</th>
+          <th>Book ID</th>
+          <th>Student</th>
+          <th>Student ID</th>
+          <th>Priority Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in entries %}
+        <tr>
+          <td>
+            <span class="position-badge">{{ loop.index }}</span>
+          </td>
+          <td><code>#{{ e.book_id }}</code></td>
+          <td>{{ e.student }}</td>
+          <td>{{ e.sid }}</td>
+          <td>
+            {% if e.type == 'VIP' %}
+              <span class="badge-role vip"><i class="fas fa-star"></i> VIP Priority</span>
+            {% else %}
+              <span class="badge-role student">Regular</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty-state">
+      <i class="fas fa-layer-group"></i>
+      <h5>Queue is Empty</h5>
+      <p>No students are currently waiting for books.</p>
+    </div>
+  {% endif %}
+</div>
+
+<div class="card-pro mt-4">
+  <div class="card-pro-header">
+    <span><i class="fas fa-code me-2"></i>Data Structure Used</span>
+  </div>
+  <div class="dsa-explainer">
+    <div class="dsa-item">
+      <span class="dsa-badge purple">Priority Queue</span>
+      <p>VIP/Faculty requests are dequeued first regardless of arrival time. C++ <code>std::priority_queue&lt;WaitEntry, vector, greater&lt;&gt;&gt;</code></p>
+    </div>
+    <div class="dsa-item">
+      <span class="dsa-badge blue">FIFO Queue</span>
+      <p>Regular students follow First-In-First-Out order. C++ <code>std::queue&lt;pair&lt;int,string&gt;&gt;</code></p>
+    </div>
+    <div class="dsa-item">
+      <span class="dsa-badge green">Auto-Assignment</span>
+      <p>On return, the next student in the priority queue is automatically notified and the book is assigned.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

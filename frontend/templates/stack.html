@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Return History — LibraryPro{% endblock %}
+{% block page_title %}Return History Stack{% endblock %}
+
+{% block content %}
+<div class="card-pro">
+  <div class="card-pro-header">
+    <span>
+      <i class="fas fa-clock-rotate-left me-2 text-info"></i>Recent Returns
+      <span class="badge bg-secondary ms-2">Stack (LIFO)</span>
+    </span>
+  </div>
+
+  <div class="info-box mb-4">
+    <i class="fas fa-circle-info"></i>
+    <span>This uses a <strong>Stack (LIFO)</strong> — the most recently returned book appears first.
+    C++ <code>std::stack&lt;pair&lt;int, string&gt;&gt;</code></span>
+  </div>
+
+  {% if entries %}
+  <div class="stack-visual">
+    {% for e in entries %}
+    <div class="stack-card" style="--delay:{{ loop.index0 * 0.06 }}s">
+      <div class="stack-pos">
+        {% if loop.first %}<span class="stack-top-badge">TOP</span>{% endif %}
+        {{ loop.index }}
+      </div>
+      <div class="stack-info">
+        <code>#{{ e.book_id }}</code>
+        <strong>{{ e.title }}</strong>
+      </div>
+      <div class="stack-icon"><i class="fas fa-rotate-left"></i></div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <div class="empty-state">
+      <i class="fas fa-clock-rotate-left"></i>
+      <h5>Stack is Empty</h5>
+      <p>No books have been returned yet in this session.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

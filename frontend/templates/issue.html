@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Issue Book — LibraryPro{% endblock %}
+{% block page_title %}Issue Book{% endblock %}
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto; width: 100%;">
+
+  <div class="card-pro">
+    <div class="card-pro-header">
+      <span><i class="fas fa-arrow-right-from-bracket me-2 text-warning"></i>Issue a Book</span>
+    </div>
+
+    <form action="{{ url_for('issue_book') }}" method="POST" class="form-pro">
+
+      <div class="form-group-pro">
+        <label>Select Book <span class="required">*</span></label>
+        <span class="label-hint text-muted">
+          <i class="fas fa-list"></i> Out of stock books will join waitlist
+        </span>
+          <div style="position: relative;">
+            <input type="text" name="isbn" id="bookSearchInput" class="form-input" placeholder="e.g. 9780131103627" autocomplete="off" required>
+            <div id="bookInfoFeedback" class="small mt-1 text-muted"></div>
+          </div>
+          
+          <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                
+                const books = [
+                  {% for book in books %}
+                    {
+                      isbn: "{{ book.isbn | default('') }}",
+                      title: "{{ book.title | replace('\"', '\\\"') | replace('\'', '\\\'') }}",
+                      author: "{{ book.author | replace('\"', '\\\"') | replace('\'', '\\\'') }}",
+                      available: {{ book.available }},
+                      total: {{ book.total_copies }}
+                    }{% if not loop.last %},{% endif %}
+                  {% endfor %}
+                ];
+                
+                const isbnInput = document.getElementById('bookSearchInput');
+                const feedback = document.getElementById('bookInfoFeedback');
+                
+                isbnInput.addEventListener('input', (e) => {
+                    const val = e.target.value.trim();
+                    if (!val) {
+                        feedback.innerHTML = "";
+                        return;
+                    }
+                    
+                    const match = books.find(b => b.isbn === val);
+                    if (match) {
+                        if (match.available > 0) {
+                            feedback.innerHTML = `<span class="text-success"><i class="fas fa-check-circle"></i> Found: <strong>${match.title}</strong> by ${match.author} (Available: ${match.available}/${match.total})</span>`;
+                        } else {
+                            feedback.innerHTML = `<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Found: <strong>${match.title}</strong> (Out of Stock - will join waitlist)</span>`;
+                        }
+                    } else {
+                        feedback.innerHTML = `<span class="text-danger"><i class="fas fa-times-circle"></i> Book not found in catalog</span>`;
+                    }
+                });
+            });
+          </script>
+      </div>
+
+      <div class="form-group-pro">
+        <label>Student Name <span class="required">*</span></label>
+        <div class="input-icon">
+          <i class="fas fa-user-graduate"></i>
+          <input type="text" name="student_name" class="form-input" placeholder="Full name" required/>
+        </div>
+      </div>
+
+      <div class="form-group-pro">
+        <label>Student ID <span class="required">*</span></label>
+        <div class="input-icon">
+          <i class="fas fa-id-badge"></i>
+          <input type="text" name="student_id" class="form-input" placeholder="Roll number / ID" required/>
+        </div>
+      </div>
+
+      <div class="form-check-custom">
+        <input type="checkbox" id="vip" name="vip" class="form-check-input"/>
+        <label for="vip">
+          <i class="fas fa-star text-warning"></i>
+          VIP / Faculty (Priority Queue — gets next available copy first)
+        </label>
+      </div>
+      <div class="info-box mt-3">
+        <i class="fas fa-circle-info"></i>
+        <span>Due date will be set to <strong>14 days</strong> from today.
+              Late returns incur ₹2/day fine.</span>
+      </div>
+      <button type="submit" class="btn-primary-lg mt-4">
+        <i class="fas fa-arrow-right-from-bracket"></i> Issue Book
+      </button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}
