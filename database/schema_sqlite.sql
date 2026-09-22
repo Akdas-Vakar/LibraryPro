@@ -35,6 +35,8 @@ CREATE TABLE IF NOT EXISTS books (
     rfid_tag      TEXT DEFAULT NULL,
     barcode       TEXT DEFAULT NULL,
     temporarily_off_shelf INTEGER DEFAULT 0,
+    publication_year INTEGER DEFAULT NULL,
+    publisher     TEXT DEFAULT NULL,
     FOREIGN KEY (slot_id) REFERENCES locations_slot(id) ON DELETE SET NULL
 );
 
